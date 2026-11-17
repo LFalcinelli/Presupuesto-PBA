@@ -1,0 +1,18 @@
+{
+  "year": 2027,
+  "spending": 58654709589891,
+  "income": 56502010462891,
+  "primaryMillions": -205029,
+  "interestMillions": 1947670,
+  "currentMillions": 54606416,
+  "capitalMillions": 4048294,
+  "prior": {"spending": 43021244867935, "income": 41484520658935},
+  "incomeGroups": [
+    {"name": "Impuestos provinciales", "millions": 22043268, "detail": "Recaudación que el proyecto estima obtener de los impuestos propios de la Provincia.", "children": [["Ingresos Brutos", 16713438], ["Sellos", 2170016], ["Inmobiliario", 1206552], ["Automotor", 860520], ["Otros impuestos provinciales", 1092742]]},
+    {"name": "Impuestos de origen nacional", "millions": 21101988, "detail": "Incluye la distribución de impuestos nacionales y otros regímenes. No sumar de nuevo la coparticipación."},
+    {"name": "Aportes a la seguridad social", "millions": 7976427, "detail": "Aportes y contribuciones que financian el sistema previsional provincial."},
+    {"name": "Transferencias corrientes", "millions": 4677982, "detail": "Incluyen envíos de Nación y de entes provinciales que no consolidan. Los recursos previstos por el fondo de recupero son una estimación de ingresos, no un cobro confirmado."},
+    {"name": "Recursos no tributarios propios", "millions": 600288, "detail": "Ingresos de operación, venta de bienes y servicios y rentas de la propiedad."},
+    {"name": "Recursos de capital", "millions": 102058, "detail": "Incluyen transferencias de capital y recuperos de inversiones financieras."}
+  ]
+}

@@ -1,0 +1,112 @@
+[
+  {
+    "name": "Planta potabilizadora, conducción de agua y obras complementarias",
+    "towns": [
+      "La Plata",
+      "Berisso",
+      "Ensenada"
+    ],
+    "code": "9.4.8776.0.51",
+    "amount": 58672136197,
+    "page": 10
+  },
+  {
+    "name": "Rehabilitación y recambio de cañerías",
+    "towns": [
+      "La Plata"
+    ],
+    "code": "9.4.13424.0.52",
+    "amount": 6864014803,
+    "page": 10
+  },
+  {
+    "name": "Ampliación de la planta depuradora cloacal",
+    "towns": [
+      "Chascomús"
+    ],
+    "code": "9.2.13472.0.96",
+    "amount": 2005147518,
+    "page": 4
+  },
+  {
+    "name": "Planta depuradora de líquidos cloacales",
+    "towns": [
+      "San Cayetano"
+    ],
+    "code": "9.2.13472.0.95",
+    "amount": 2852639492,
+    "page": 4
+  },
+  {
+    "name": "Desagües cloacales en la zona 5A, lote 1",
+    "towns": [
+      "Berazategui"
+    ],
+    "code": "9.2.14579.0.51",
+    "amount": 2079824245,
+    "page": 4
+  },
+  {
+    "name": "Desagües cloacales en la zona 5B, lote 2",
+    "towns": [
+      "Berazategui"
+    ],
+    "code": "9.2.14579.0.52",
+    "amount": 1932964921,
+    "page": 4
+  },
+  {
+    "name": "Estación de bombeo cloacal de Grand Bourg, etapa 5",
+    "towns": [
+      "Malvinas Argentinas"
+    ],
+    "code": "9.2.14599.0.51",
+    "amount": 2277151804,
+    "page": 4
+  },
+  {
+    "name": "Cloacas en el barrio El Pinasco",
+    "towns": [
+      "Azul"
+    ],
+    "code": "9.2.15313.0.51",
+    "amount": 2500000000,
+    "page": 4
+  },
+  {
+    "name": "Recambio de colectores cloacales en Punta Alta",
+    "towns": [
+      "Coronel Rosales"
+    ],
+    "code": "9.2.15367.0.51",
+    "amount": 1923726329,
+    "page": 8
+  },
+  {
+    "name": "Recambio de colectores cloacales en la ciudad de Bahía Blanca",
+    "towns": [
+      "Bahía Blanca"
+    ],
+    "code": "9.2.15405.0.53",
+    "amount": 1500000000,
+    "page": 8
+  },
+  {
+    "name": "Colector cloacal Bosque Peralta Ramos",
+    "towns": [
+      "General Pueyrredón"
+    ],
+    "code": "9.2.15401.0.51",
+    "amount": 500000000,
+    "page": 8
+  },
+  {
+    "name": "Colector cloacal, etapa II",
+    "towns": [
+      "Bragado"
+    ],
+    "code": "9.2.15349.0.51",
+    "amount": 1090000000,
+    "page": 8
+  }
+]

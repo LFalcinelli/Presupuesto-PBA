@@ -1,0 +1,11 @@
+{
+  "name": "presupuesto-pba",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/pack-data.cjs",
+    "build:pages": "node scripts/package-pages.cjs",
+    "dev": "node scripts/serve.cjs",
+    "test": "node --test tests/data.cjs"
+  }
+}
