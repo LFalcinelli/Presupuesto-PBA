@@ -1,0 +1,28 @@
+{
+  "inflation2027": 0.214,
+  "purpose": [
+    {"id":"social","label":"Servicios sociales","millions":36796217,"detail":"Incluye educación, salud, previsión y otras funciones sociales. Es una finalidad: puede reunir gasto de más de un organismo."},
+    {"id":"administration","label":"Administración gubernamental","millions":11005233,"detail":"Incluye distintas funciones de gobierno. No equivale únicamente a sueldos o costos de oficinas."},
+    {"id":"security","label":"Servicios de seguridad","millions":5931938,"detail":"Es la finalidad de seguridad del Mensaje. No equivale al crédito del Ministerio de Seguridad."},
+    {"id":"economic","label":"Servicios económicos","millions":2962030,"detail":"Agrupa funciones económicas de la Provincia."},
+    {"id":"debt","label":"Servicios de la deuda pública","millions":1959252,"detail":"Esta finalidad incluye intereses y otros gastos. La amortización de capital se registra en las aplicaciones financieras."}
+  ],
+  "economic": [
+    {"id":"staff","label":"Personal","millions":23225144,"detail":"Gastos en personal presupuestados. El total no equivale a un aumento salarial individual."},
+    {"id":"transfers","label":"Transferencias corrientes","millions":15520133,"children":[["Transferencias automáticas a municipios",7213294],["Otras transferencias corrientes",8306839]]},
+    {"id":"benefits","label":"Prestaciones de la seguridad social","millions":10356700},
+    {"id":"goods","label":"Bienes y servicios","millions":3545188},
+    {"id":"rent","label":"Rentas de la propiedad pagadas","millions":1959252,"children":[["Intereses de la deuda",1947670],["Otras rentas de la propiedad",11582]]},
+    {"id":"capital","label":"Gastos de capital","millions":4048294,"children":[["Inversión real directa",2193898],["Transferencias de capital",1034012],["Inversión financiera",820385]]}
+  ],
+  "municipalClose2025": {
+    "ownCurrentMillions":5586787,
+    "otherCurrentMillions":5465187,
+    "capitalIncomeMillions":368654,
+    "currentBalanceMillions":772723,
+    "capitalExpenseMillions":1354436,
+    "balanceMillions":-213059,
+    "surplusDistricts":35,
+    "deficitDistricts":100
+  }
+}

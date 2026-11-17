@@ -9,8 +9,8 @@ Dirección pública: [Gasto Público PBA](https://lfalcinelli.github.io/Presupue
 - `npm run build:pages`: prepara los archivos públicos en `dist/`. GitHub Actions valida los datos y publica esa carpeta desde `main`.
 - `npm test`: controles de reconciliación, cobertura y referencias.
 
-Datos al 17 de noviembre de 2026. El proyecto 2027 está separado del crédito inicial 2026 y de la ejecución. Los importes se guardan en pesos enteros, salvo partidas expresamente transcritas en millones. Los originales de trabajo quedan fuera del sitio.
+El sitio muestra el Proyecto 2027, el crédito inicial de 2026 y la ejecución en etapas identificadas. El flujo de portada se puede compartir con la composición, la unidad y las ramas abiertas. Los importes se guardan en pesos enteros, salvo partidas expresamente transcritas en millones. Los originales de trabajo quedan fuera del sitio.
 
-Para regenerar las extracciones con Python (openpyxl, pypdf y xlrd), consultar [las fuentes de entrada](FUENTES.md), guardar los archivos con sus nombres indicados en un directorio y ejecutar `python scripts/build-data.py /ruta/a/las/fuentes` y `npm run build`. Las cifras provenientes del Mensaje y las obras revisadas se mantienen en JSON separado y deben comprobarse contra el documento antes de actualizarse.
+Para regenerar las extracciones con Python (openpyxl, pypdf, xlrd y lxml), descargar [las fuentes de entrada](FUENTES.md) y ejecutar `python scripts/build-data.py /ruta/a/las/fuentes`, `python scripts/import-fiscal.py /ruta/a/las/fuentes` y `npm run build`. Verificar contra sus documentos las cifras del Mensaje, del informe municipal y de las obras revisadas.
 
-Pendientes de datos para una versión más profunda: apertura programática completa, listado integral de obras por partido, ejecución con crédito vigente por organismo y conciliación del universo para comparar términos reales del proyecto con 2026. La selección de Planilla 36 no sustituye esa cobertura.
+Pendientes de datos para una versión más profunda: apertura programática completa, listado integral de obras por partido, ejecución con crédito vigente por organismo y cuentas propias por municipio. La comparación del proyecto con el crédito inicial 2026 usa una inflación promedio proyectada de 21,4%. Las series ejecutadas usan IPC observado.
