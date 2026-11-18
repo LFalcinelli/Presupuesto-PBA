@@ -2,18 +2,18 @@
   "inflation2027": 0.214,
   "purpose": [
     {"id":"social","label":"Servicios sociales","millions":36796217,"detail":"Incluye educación, salud, previsión y otras funciones sociales. Es una finalidad: puede reunir gasto de más de un organismo."},
-    {"id":"administration","label":"Administración gubernamental","millions":11005233,"detail":"Incluye distintas funciones de gobierno. No equivale únicamente a sueldos o costos de oficinas."},
+    {"id":"administration","label":"Administración gubernamental","millions":11005273,"detail":"Incluye distintas funciones de gobierno. No equivale únicamente a sueldos o costos de oficinas."},
     {"id":"security","label":"Servicios de seguridad","millions":5931938,"detail":"Es la finalidad de seguridad del Mensaje. No equivale al crédito del Ministerio de Seguridad."},
     {"id":"economic","label":"Servicios económicos","millions":2962030,"detail":"Agrupa funciones económicas de la Provincia."},
     {"id":"debt","label":"Servicios de la deuda pública","millions":1959252,"detail":"Esta finalidad incluye intereses y otros gastos. La amortización de capital se registra en las aplicaciones financieras."}
   ],
   "economic": [
-    {"id":"staff","label":"Personal","millions":23225144,"detail":"Gastos en personal presupuestados. El total no equivale a un aumento salarial individual."},
-    {"id":"transfers","label":"Transferencias corrientes","millions":15520133,"children":[["Transferencias automáticas a municipios",7213294],["Otras transferencias corrientes",8306839]]},
-    {"id":"benefits","label":"Prestaciones de la seguridad social","millions":10356700},
-    {"id":"goods","label":"Bienes y servicios","millions":3545188},
-    {"id":"rent","label":"Rentas de la propiedad pagadas","millions":1959252,"children":[["Intereses de la deuda",1947670],["Otras rentas de la propiedad",11582]]},
-    {"id":"capital","label":"Gastos de capital","millions":4048294,"children":[["Inversión real directa",2193898],["Transferencias de capital",1034012],["Inversión financiera",820385]]}
+    {"id":"staff","label":"Personal","millions":23225144.255,"detail":"Remuneraciones presupuestadas."},
+    {"id":"transfers","label":"Transferencias corrientes","millions":15520133.142693,"children":[["Al sector público",11007020.342027],["Al sector privado",4513112.800666]]},
+    {"id":"benefits","label":"Prestaciones de la seguridad social","millions":10356699.927},
+    {"id":"goods","label":"Bienes, servicios e impuestos","millions":3545662.037756,"children":[["Bienes y servicios",3543630.231314],["Impuestos",2031.806442]]},
+    {"id":"rent","label":"Rentas de la propiedad pagadas","millions":1958776.209971,"children":[["Intereses de la deuda",1947670.003],["Derechos sobre bienes intangibles",11106.206971]]},
+    {"id":"capital","label":"Gastos de capital","millions":4048294.017471,"children":[["Inversión real directa",2193897.795],["Transferencias de capital",1034011.537471],["Inversión financiera",820384.685]]}
   ],
   "municipalClose2025": {
     "ownCurrentMillions":5586787,

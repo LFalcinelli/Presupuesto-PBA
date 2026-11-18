@@ -1,5 +1,6 @@
 {
-  "project": ["Proyecto 2027 · Mensaje 4527 y articulado", "https://es.scribd.com/document/1093957637/PRESUPUESTO-pdf"],
+  "project": ["Proyecto 2027 · Mensaje 4527, articulado y anexos", "https://intranet.hcdiputados-ba.gov.ar/proyectos/26-27PE1012026-11-0519-29-54.pdf"],
+  "projectRecord": ["Cámara de Diputados · Expediente PE-1/26-27", "https://intranet.hcdiputados-ba.gov.ar/26-27/PE/1/0"],
   "presentation": ["Presentación del Ministerio de Economía", "https://es.scribd.com/document/1093894694/Presentacion-Presupuesto-Impositiva-y-Financiamiento-2027-pdf"],
   "budget": ["Presupuesto 2026 · Ley 15.557", "https://normas.gba.gob.ar/documentos/xAZogLSo.html"],
   "areas": ["Cuadro por organismo · transcripción del art. 5°", "https://diputados-fotos-scdev.nyc3.digitaloceanspaces.com/wp-content/uploads/2026/11/06140623/cuadro_organismos_presupuesto_2027.pdf"],
@@ -17,5 +18,8 @@
   "functions": ["Ministerio de Economía de Nación · Ejecución por finalidad y función", "https://www.argentina.gob.ar/economia/sechacienda/coordinacion-fiscal-provincial/ejecucion-presupuestaria-provincial/gastos-por"],
   "municipalFinance": ["Provincia de Buenos Aires · Finanzas municipales 2016–2025", "https://www.ec.gba.gov.ar/areas/Sub_Politica_Coord_Eco/CoordMunicipal/informe/Evoluci%C3%B3n%20de%20las%20Finanzas%20Municipales%202016%20%E2%80%93%202025.pdf"],
   "bulletin": ["Sistema de Boletines Oficiales Municipales", "https://sibom.slyt.gba.gob.ar/"],
-  "municipalDirectory": ["Municipios Argentinos · Explorador independiente", "https://municipiosargentinos.net/"]
+  "municipalDirectory": ["Municipios Argentinos · Explorador independiente", "https://municipiosargentinos.net/"],
+  "ron": ["Secretaría de Hacienda · Recursos de origen nacional", "https://www.argentina.gob.ar/economia/sechacienda/asuntosprovinciales/ron"],
+  "ronOctober": ["Secretaría de Hacienda · Recursos de origen nacional a octubre de 2026", "https://www.argentina.gob.ar/sites/default/files/ron_informe_cierre_202610.pdf"],
+  "ioma": ["Datos Abiertos PBA · Gasto anual de IOMA", "https://catalogo.datos.gba.gob.ar/dataset/gasto-anual"]
 }

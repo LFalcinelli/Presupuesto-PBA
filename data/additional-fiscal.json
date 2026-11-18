@@ -1,0 +1,111 @@
+{
+  "ipc2026": [
+    10400.4968,
+    10714.2389,
+    11065.4568,
+    11330.2697,
+    11556.8543,
+    11792.013,
+    12027.5347,
+    12223.9951,
+    12463.7838,
+    12783.6887
+  ],
+  "closing2026": {
+    "spendingMillions": 46521737,
+    "incomeMillions": 44174242,
+    "balanceMillions": -2347495
+  },
+  "ioma": {
+    "2019": {
+      "Primer nivel": 15589589190,
+      "Segundo nivel": 14897979025,
+      "Discapacidad": 8921894250,
+      "Medicamentos": 14795098004,
+      "Prótesis y ortesis": 4315987007,
+      "Otras erogaciones": 2262620312,
+      "Administración y funcionamiento": 3115314389
+    },
+    "2020": {
+      "Primer nivel": 16692647661,
+      "Segundo nivel": 16748952083,
+      "Discapacidad": 12689570977,
+      "Medicamentos": 21794177012,
+      "Prótesis y ortesis": 4724378932,
+      "Otras erogaciones": 2542209680,
+      "Administración y funcionamiento": 3632237132
+    },
+    "2021": {
+      "Primer nivel": 23711778126,
+      "Segundo nivel": 24887470962,
+      "Discapacidad": 14858823293,
+      "Medicamentos": 26595163435,
+      "Prótesis y ortesis": 7764365592,
+      "Otras erogaciones": 7291222901,
+      "Administración y funcionamiento": 5247636775
+    },
+    "2022": {
+      "Primer nivel": 43969744176,
+      "Segundo nivel": 38914114611,
+      "Discapacidad": 23393025904,
+      "Medicamentos": 44565902471,
+      "Prótesis y ortesis": 11967886624,
+      "Otras erogaciones": 7385064554,
+      "Administración y funcionamiento": 7766874114
+    },
+    "2023": {
+      "Primer nivel": 109666832508,
+      "Segundo nivel": 90318460061,
+      "Discapacidad": 55327133187,
+      "Medicamentos": 130076860400,
+      "Prótesis y ortesis": 31387901612,
+      "Administración y funcionamiento": 18058587874,
+      "Otras erogaciones": 16016326286
+    },
+    "2024": {
+      "Primer nivel": 296256991050,
+      "Segundo nivel": 299593508310,
+      "Discapacidad": 134817130733,
+      "Medicamentos": 449899742749,
+      "Prótesis y ortesis": 109750236674,
+      "Otras erogaciones": 42685131768,
+      "Administración y funcionamiento": 48568382008
+    }
+  },
+  "ronAnnual": {
+    "2003": 4427529900,
+    "2004": 6010778200,
+    "2005": 7199838500,
+    "2006": 8655256500,
+    "2007": 11119164400,
+    "2008": 13798025700,
+    "2009": 15090837800,
+    "2010": 19946944100,
+    "2011": 26016253500,
+    "2012": 32749880200,
+    "2013": 42348397200,
+    "2014": 57364969000,
+    "2015": 77569065113,
+    "2016": 101168491712,
+    "2017": 137287175497,
+    "2018": 215057650364,
+    "2019": 361993318198,
+    "2020": 501534048547,
+    "2021": 807270952714,
+    "2022": 1471986972648,
+    "2023": 3237189350494,
+    "2024": 9368302750958,
+    "2025": 13691853935976
+  },
+  "ronRecent": {
+    "month": 10,
+    "2025": {
+      "totalMillions": 11238191,
+      "cfiMillions": 9472761
+    },
+    "2026": {
+      "totalMillions": 14915314,
+      "cfiMillions": 12476770
+    }
+  }
+}

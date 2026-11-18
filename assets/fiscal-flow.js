@@ -8,7 +8,7 @@ const stackedFlow=matchMedia('(max-width: 680px)');
 const flowHistoryRoute=id=>Object.hasOwn(flowHistory,id)?route('evolucion',{serie:flowHistory[id]}):'';
 
 function flowData(view){
-  const row=(r,prefix)=>({...r,id:prefix+r.id,label:r.label,amount:r.millions*million});
+  const row=(r,prefix)=>({...r,id:prefix+r.id,label:r.label,amount:Math.round(r.millions*million)});
   const from=p.incomeGroups.map((r,i)=>row({...r,id:i,label:r.name},'r'));
   let to;
   if(view==='who')to=Object.entries(groups).map(([id,label])=>{
@@ -20,10 +20,7 @@ function flowData(view){
     row(composition.economic.find(x=>x.id==='capital'),'e')
   ];
   else if(view==='economic')to=composition.economic.map(r=>row(r,'e')).sort((a,b)=>b.amount-a.amount);
-  else {
-    to=composition.purpose.map(r=>row(r,'e'));
-    to.push({id:'eunassigned',label:'Diferencia sin asignar',amount:p.spending-to.reduce((s,r)=>s+r.amount,0),detail:'Diferencia entre el total del proyecto y la suma de las finalidades legibles del Mensaje. No se imputó a ninguna finalidad.'});
-  }
+  else to=composition.purpose.map(r=>row(r,'e'));
   return {from,to};
 }
 
@@ -43,14 +40,14 @@ function flowDetails(row,side,state){
   const id='flow-'+side+'-detail';
   if(!row)return '<div id="'+id+'" class="flow-detail"><p class="small no-bottom">'+(side==='from'?'Elegí un ingreso para saber qué incluye.':'Elegí un destino para ver el detalle disponible.')+'</p></div>';
   const base=side==='from'?p.income:p.spending;
-  const family=row.areas?'areas':'project';
-  const context=(side==='from'?'Ingresos':'Gastos')+' · '+(side==='from'?'Cuadro 6':family==='areas'?'art. 5°':state.view==='purpose'?'Cuadro 8':'Cuadro 7');
+  const [caption,page]=side==='from'?['Cuadro 6',83]:row.areas?['art. 5°',96]:state.view==='purpose'?['Cuadro 8',88]:['Planilla 1',132];
+  const context=(side==='from'?'Ingresos':'Gastos')+' · '+caption;
   const lines=(row.children||[]).map(([label,m])=>'<li><span>'+esc(label)+'</span><strong>'+flowValue(m*million,base,state.unit)+'</strong></li>').join('');
   const listing=row.areas?'<ol class="flow-detail-list flow-areas">'+row.areas.map(a=>'<li><a href="'+budgetRoute('gastos',{area:a.id})+'">'+esc(pretty(a.name))+'</a><strong>'+flowValue(a.amount,base,state.unit)+'</strong></li>').join('')+'</ol>':'';
   const historyLink=flowHistoryRoute(row.id);
   return '<div id="'+id+'" class="flow-detail"><p class="eyebrow">'+context+'</p><h3>'+esc(row.label)+'</h3><p><strong>'+exact(row.amount)+'</strong> · '+share(row.amount,base)+' '+(side==='from'?'de los ingresos':'del gasto')+'.</p>'+
     (row.detail?'<p class="small">'+esc(row.detail)+'</p>':'')+(lines?'<ul class="flow-detail-list">'+lines+'</ul>':'')+listing+
-    '<p class="small no-bottom">'+source(family,'Ver fuente')+(historyLink?' · <a href="'+historyLink+'">Ver ejecución histórica →</a>':'')+'</p></div>';
+    '<p class="small no-bottom">'+source('project','Ver fuente','#page='+page)+(historyLink?' · <a href="'+historyLink+'">Ver ejecución histórica →</a>':'')+'</p></div>';
 }
 function flowTable(from,to,state){
   return '<details class="flow-fold" data-flow-fold="tabla"><summary>Ver el flujo como tabla</summary><div class="grid-two">'+[[from,'Ingresos previstos',p.income],[to,'Gasto propuesto',p.spending]].map(([rows,label,base])=>
@@ -69,7 +66,7 @@ function flowMarkup(state){
     '<div class="flow-column flow-out"><h3>'+flowHead[state.view]+'</h3>'+to.map(r=>flowRow(r,'to',state)).join('')+'</div></div>'+
     '<div class="flow-details" aria-live="polite">'+flowDetails(selectedFrom,'from',state)+flowDetails(selectedTo,'to',state)+'</div>'+
     '<p class="small flow-status" role="status"></p>'+
-    '<details class="flow-fold" data-flow-fold="lectura"><summary>Cómo leer el flujo</summary><p>La diferencia entre los ingresos y los gastos es el resultado financiero. Las ramas se expresan en pesos del proyecto, antes de fuentes o aplicaciones financieras. El denominador de «Cada $100» es distinto en cada lado. Los cuadros del Mensaje están redondeados en millones; donde las finalidades no cierran, mostramos la diferencia sin repartirla.</p><p>'+source('project','Mensaje 4527 · cuadros 5 a 8')+' · <a href="#fuentes">Fuentes y metodología</a></p></details>'+flowTable(from,to,state)+'</section>';
+    '<details class="flow-fold" data-flow-fold="lectura"><summary>Cómo leer el flujo</summary><p>La diferencia entre los ingresos y los gastos es el resultado financiero. «Cada $100» usa el total de ingresos a la izquierda y el total de gastos a la derecha. Los cuadros de ingresos y finalidades del Mensaje están redondeados en millones.</p><p>'+source('project','Mensaje 4527 · cuadros 5 a 8','#page=82')+' · <a href="#fuentes">Fuentes y metodología</a></p></details>'+flowTable(from,to,state)+'</section>';
 }
 function drawFlowRibbons(){
   const container=document.querySelector('.flow-body');

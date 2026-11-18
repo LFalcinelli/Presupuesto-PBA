@@ -2,11 +2,12 @@
 
 const { project:p, areas, municipios:geo, works, history, sources, composition } = PBA_DATA;
 const fiscal = PBA_DATA['fiscal-series'], priorAreas = PBA_DATA['prior-areas'];
+const extraFiscal = PBA_DATA['additional-fiscal'];
 const main = document.querySelector('main');
 const dialog = document.querySelector('#detail');
 const content = document.querySelector('#detail-content');
 const sections = {inicio:'Inicio',provincia:'Provincia',municipio:'Mi municipio',evolucion:'Evolución',fuentes:'Fuentes'};
-const views = {resumen:'Resumen',gastos:'Gastos y áreas',ingresos:'Ingresos',avance:'Avance 2026'};
+const views = {resumen:'Resumen',gastos:'Gastos y áreas',ingresos:'Ingresos',anexos:'Anexos 2027',avance:'Avance 2026'};
 const groups = {central:'Administración Central',organismos:'Organismos descentralizados',prevision:'Instituciones de previsión social'};
 const digits = (x,d=0) => formatNumber(x,d);
 const exact = x => formatMoney(x);
@@ -20,6 +21,14 @@ const realChange = (amount,base) => 100*(in2026Pesos(amount)/base-1);
 const signedPct = n => (n<0?'−':n>0?'+':'')+digits(Math.abs(n),1)+'%';
 const monthName = number => new Intl.DateTimeFormat('es-AR',{month:'long',timeZone:'UTC'}).format(new Date(Date.UTC(2026,number-1,1)));
 const historicPrice = row => history.at(-1).ipc/row.ipc;
+const ipc2026 = extraFiscal.ipc2026;
+const lastIpc = ipc2026.at(-1);
+const monthlyFactor = lastIpc/ipc2026.at(-2);
+const price2026 = (ipc2026.reduce((sum,level)=>sum+level,0)+lastIpc*monthlyFactor+lastIpc*monthlyFactor**2)/12;
+const budgetRefs = [
+  {year:2026, spending:extraFiscal.closing2026.spendingMillions*million, ipc:price2026, stage:'Proyección de cierre', page:82},
+  {year:2027, spending:p.spending, ipc:price2026*(1+inflation), stage:'Proyecto de ley', page:96}
+];
 const esc = x => String(x).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const normal = x => String(x).normalize('NFD').replace(/\p{Diacritic}/gu,'').replace(/[^\w ]/g,' ').toLowerCase().trim();
 const share = (x,base) => digits(100*x/base,1)+'%';
@@ -70,7 +79,7 @@ function summary(){
   return '<div class="metrics">'+card('Gasto propuesto',money(p.spending),'Gasto corriente y de capital')+card('Recursos previstos',money(p.income),'Ingresos corrientes y de capital')+card('Resultado financiero',money(balance),'Déficit de '+share(-balance,p.income)+' de los ingresos','red')+'</div>'+
     '<section class="section grid-two"><article class="panel"><h2>¿Alcanzan los ingresos?</h2><p class="muted">El déficit es la diferencia entre los recursos previstos y todo el gasto, incluidos los intereses.</p>'+
     bars([['Ingresos',p.income,p.spending,'income'],['Gastos',p.spending,p.spending,''],['Déficit',balance,p.spending,'deficit']])+
-    '<p class="small compact no-bottom">'+source('project','Cuadro 5 del Mensaje')+' · '+source('presentation','Presentación del Ministerio')+'</p></article>'+
+    '<p class="small compact no-bottom">'+source('project','Cuadro 5 del Mensaje','#page=82')+' · '+source('presentation','Presentación del Ministerio')+'</p></article>'+
     '<article class="panel"><h2>Antes y después de intereses</h2><p class="muted">El proyecto prevé déficit incluso antes de pagar intereses.</p><table><tbody>'+
     [['Saldo antes de intereses',p.primaryMillions*million],['Intereses de la deuda',p.interestMillions*million],['Saldo después de intereses',balance]].map(([n,v])=>'<tr><th scope="row">'+n+'</th><td class="num">'+money(v)+'</td></tr>').join('')+
     '</tbody></table><p class="small compact no-bottom">El saldo y los intereses se comparan en la misma cuenta. El financiamiento se registra por separado.</p></article></section>'+
@@ -82,19 +91,28 @@ function income(){
   const names=['Ingresos Brutos','Inmobiliario','Automotores','Sellos','Otros recursos tributarios'];
   return '<section class="section">'+brief('Proyecto 2027','¿De dónde saldrían los recursos?','Abrí un grupo para ver qué incluye. Los importes son estimaciones del proyecto.')+
     '<div class="panel">'+bars(p.incomeGroups.map(r=>[r.name,r.millions*million,p.income,'income']))+
-    '<p class="small compact no-bottom">'+source('project','Cuadro 6 del Mensaje')+' · Los rubros se publicaron redondeados a millones.</p></div>'+
+    '<p class="small compact no-bottom">'+source('project','Cuadro 6 del Mensaje','#page=83')+' · Los rubros se publicaron redondeados a millones.</p></div>'+
     p.incomeGroups.map((r,i)=>'<details class="income-details" '+(!i?'open':'')+'><summary>'+esc(r.name)+'</summary><p class="small">'+esc(r.detail)+'</p>'+
       (r.children?bars(r.children.map(([label,m])=>[label,m*million,r.millions*million,'income'])):'')+'</details>').join('')+'</section>'+
     '<section class="section">'+brief('Enero–'+monthName(tax.months)+' 2026','¿Cuánto recaudó la Provincia en impuestos propios?','Ingresos recaudados en pesos de 2026, sin incluir coparticipación federal.')+
     '<div class="panel"><p class="metric">'+money(total)+'</p>'+bars(names.map((n,i)=>[n,parts[i],total,'income']))+
-    '<p class="small compact">'+source('taxCatalog','Datos Abiertos PBA')+' · '+source('taxTables','Planillas de recaudación')+'</p>'+sectionLink(route('evolucion',{serie:'tax'}),'Ver la evolución real de la recaudación')+'</div></section>';
+    '<p class="small compact">'+source('taxCatalog','Datos Abiertos PBA')+' · '+source('taxTables','Planillas de recaudación')+'</p>'+sectionLink(route('evolucion',{serie:'tax'}),'Ver la evolución real de la recaudación')+'</div></section>'+nationalRevenue();
+}
+function nationalRevenue(){
+  const ron=extraFiscal.ronRecent, previous=ron[2025], current=ron[2026];
+  const cap=current.totalMillions*million;
+  return '<section class="section">'+brief('Enero–'+monthName(ron.month)+' de cada año','¿Cuánto recibió la Provincia de los impuestos nacionales?','Recursos distribuidos automáticamente a Buenos Aires. Importes en pesos de cada período.')+
+    '<div class="grid-two"><article class="panel"><h3>Total de recursos de origen nacional</h3>'+bars([['2025',previous.totalMillions*million,cap,'income'],['2026',cap,cap,'income']])+'</article>'+
+    '<article class="panel"><h3>Coparticipación federal</h3>'+bars([['2025',previous.cfiMillions*million,cap,'income'],['2026',current.cfiMillions*million,cap,'income']])+'<p class="small compact no-bottom">La coparticipación ya está incluida en el total.</p></article></div>'+
+    '<p class="small compact">'+source('ronOctober','Secretaría de Hacienda · informe de octubre')+'</p>'+sectionLink(route('evolucion',{serie:'ron'}),'Ver la evolución real de estos recursos')+'</section>';
 }
 function spendComposition(view){
   const {to}=flowData(view);
+  const evidence=view==='who'?source('project','Artículo 5°','#page=96'):view==='purpose'?source('project','Cuadro 8 · Finalidades','#page=88'):source('project','Planilla 1 · Clasificación económica','#page=132');
   return '<div class="flow-toggles" role="group" aria-label="Composición del gasto">'+Object.entries(flowViews).map(([k,label])=>'<button type="button" data-spend-view="'+k+'" aria-pressed="'+(k===view)+'">'+label+'</button>').join('')+'</div>'+
     bars(to.map(r=>[r.label,r.amount,p.spending,'',flowHistoryRoute(r.id)]))+
     to.filter(r=>r.children?.length).map(r=>'<details class="flow-fold"><summary>Qué integra '+esc(r.label.toLocaleLowerCase('es-AR'))+'</summary>'+bars(r.children.map(([name,m])=>[name,m*million,r.amount,'']))+'</details>').join('')+
-    '<p class="small compact">'+(view==='who'?'La apertura por área está debajo. ':'Los enlaces llevan a series de gasto ejecutado. ')+source('project','Mensaje 4527')+' · '+source('areas','Art. 5° · organismos')+'</p>'+
+    '<p class="small compact">'+(view==='who'?'La apertura por área está debajo. ':'Los enlaces en el gráfico llevan a series de gasto ejecutado. ')+evidence+'</p>'+
     '<div class="actions">'+sectionLink(route('inicio',{ir:'flujo',flujo:view}),'Abrir en el flujo de portada')+'</div>';
 }
 function budgetComparison(){
@@ -118,19 +136,41 @@ function updateAreas(){
   document.querySelector('#area-count').textContent=rows.length+' de '+areas.length+' áreas';
   document.querySelector('#area-list').innerHTML=rows.length?rows.map(a=>'<button type="button" class="area-card" data-area="'+a.id+'"><span>'+groups[a.group]+'</span><strong>'+esc(pretty(a.name))+'</strong><span class="metric">'+money(a.amount)+'</span><span class="minor">'+share(a.amount,p.spending)+' del total →</span></button>').join(''):'<p class="muted">No encontramos áreas con esos filtros.</p>';
 }
+function annexes(){
+  const balances=p.multiYear, cap=Math.max(...balances.map(r=>Math.abs(r.balanceMillions)))*million;
+  const {permanent,temporary}=p.staffing, positions=permanent+temporary;
+  const documents=[
+    [132,'Gasto por naturaleza económica','Planilla 1 · Remuneraciones, bienes y servicios, transferencias, intereses e inversión.'],
+    [100,'Cargos y horas cátedra','Artículos 10 y 11 · El articulado remite a las planillas de cargos y horas docentes.'],
+    [207,'Presupuesto plurianual','Planilla 34 · Ingresos, gastos, resultados y financiamiento para 2027 a 2029.'],
+    [219,'Presupuesto con perspectiva de género','Planilla 35 · Programas y obras identificados según las brechas que buscan reducir.'],
+    [279,'Presupuesto con perspectiva ambiental','Planilla 36 · Programas y obras identificados por objetivo ambiental.']
+  ];
+  return '<section class="section">'+brief('Expediente PE-1/26-27','Planillas del Proyecto 2027','El PDF oficial de Diputados tiene 286 páginas. Las planillas comienzan en la página 131.')+
+    '<div class="actions">'+sectionLink(sources.project[1]+'#page=131','Abrir planillas')+sectionLink(sources.projectRecord[1],'Consultar el expediente')+'</div>'+
+    '<div class="grid-two section" aria-label="Datos de las planillas"><article class="panel"><h3>Cargos previstos en la Administración Provincial</h3><p class="metric moneyline">'+digits(positions)+'</p>'+
+    '<table><tbody><tr><th scope="row">Planta permanente</th><td class="num">'+digits(permanent)+'</td></tr><tr><th scope="row">Planta temporaria</th><td class="num">'+digits(temporary)+'</td></tr></tbody></table>'+
+    '<p class="small compact no-bottom">Son cargos presupuestados. La dotación efectiva se mide por separado. '+source('project','Artículo 10','#page=100')+'</p></article>'+
+    '<article class="panel"><h3>Resultado financiero previsto hasta 2029</h3><p class="small">Proyecciones en pesos de cada año.</p>'+
+    bars(balances.map(r=>[String(r.year),r.balanceMillions*million,cap,r.balanceMillions<0?'deficit':'income']))+
+    '<p class="small compact no-bottom">'+source('project','Planilla 34','#page=207')+'</p></article></div>'+
+    '<ul class="work-list panel section">'+documents.map(([page,title,note])=>'<li><div><strong>'+source('project',title,'#page='+page)+'</strong><small>'+note+'</small></div><span class="small">PDF · p. '+page+'</span></li>').join('')+'</ul></section>';
+}
 function advance(){
   const a=PBA_DATA.advance;
   return '<section class="section">'+brief('Ejecución y presupuesto','Qué pasó en 2026','Lo votado es una autorización para todo el año. El avance muestra los ingresos y gastos registrados en medio año.')+
     (a?'<div class="grid-two"><article class="panel"><h3>Votado para todo 2026</h3>'+bars([['Ingresos previstos',p.prior.income,p.prior.spending,'income'],['Gasto aprobado',p.prior.spending,p.prior.spending,'']])+'<p class="small compact no-bottom">'+source('budget')+'</p></article>'+
     '<article class="panel"><h3>Enero–junio 2026</h3>'+bars([['Ingresos percibidos',a.income,Math.max(a.income,a.spending),'income'],['Gasto devengado',a.spending,Math.max(a.income,a.spending),'']])+'<p class="small compact">Resultado financiero: <strong>'+money(a.balance)+'</strong>. Corte provisorio; no es el resultado anual.</p>'+source('advance','Ejecución provincial · segundo trimestre')+'</article></div>':
     '<article class="panel"><h3>Presupuesto votado para 2026</h3>'+bars([['Ingresos previstos',p.prior.income,p.prior.spending,'income'],['Gasto aprobado',p.prior.spending,p.prior.spending,'']])+'<p class="small compact no-bottom">'+source('budget')+' · '+source('history','Consultar ejecución al segundo trimestre')+'</p></article>')+
-    '<p class="callout compact">El proyecto 2027 es otra etapa. Esta vista no calcula una variación real entre una autorización anual y un semestre ejecutado.</p></section>';
+    '<article class="panel comparison"><h3>Proyección oficial para el cierre de 2026</h3>'+
+    bars([['Ingresos estimados',extraFiscal.closing2026.incomeMillions*million,budgetRefs[0].spending,'income'],['Gasto estimado',budgetRefs[0].spending,budgetRefs[0].spending,'']])+
+    '<p class="small compact no-bottom">Déficit proyectado: <strong>'+money(extraFiscal.closing2026.balanceMillions*million)+'</strong>. '+source('project','Cuadro 5 del Mensaje 2027','#page=82')+' · <a href="#evolucion?anio=2026">Ver en el gráfico histórico</a></p></article></section>';
 }
 function province(q){
   const view=Object.hasOwn(views,q.get('vista'))?q.get('vista'):'resumen';
   return intro('PRESUPUESTO PROVINCIAL','Las cuentas de la Provincia','Seguí el proyecto de 2027 y el avance de 2026, con los períodos separados para que la comparación sea clara.')+
     '<nav class="subnav" aria-label="Datos provinciales">'+Object.entries(views).map(([v,label])=>'<a class="button" '+(v===view?'aria-current="page" ':'')+'href="'+budgetRoute(v)+'">'+label+'</a>').join('')+'</nav>'+
-    ({resumen:summary,gastos:()=>areaView(q),ingresos:income,avance:advance}[view]());
+    ({resumen:summary,gastos:()=>areaView(q),ingresos:income,anexos:annexes,avance:advance}[view]());
 }
 
 const monthLabels = {current:'Enero–septiembre 2026',previous:'Enero–diciembre 2025'};
@@ -213,23 +253,29 @@ const historicGroups={
   'Cuenta provincial':{spending:'Gasto total',current:'Gasto corriente',capital:'Gasto de capital',income:'Ingresos totales',balance:'Resultado financiero',pbgShare:'Gasto respecto de la economía provincial'},
   'Para qué se gastó':{social:'Servicios sociales',education:'Educación y cultura',health:'Salud',security:'Servicios de seguridad',administration:'Administración gubernamental',economic:'Servicios económicos',debt:'Servicios de la deuda pública'},
   'Qué se pagó':{staff:'Personal',goods:'Consumo excluido el personal',benefits:'Prestaciones de la seguridad social',transfers:'Transferencias corrientes',investment:'Inversión real directa',capitalTransfers:'Transferencias de capital',interest:'Intereses de la deuda'},
-  'Impuestos propios':{tax:'Recaudación provincial',grossTax:'Ingresos Brutos',propertyTax:'Inmobiliario',vehicleTax:'Automotores',stampTax:'Sellos'}
+  'Ingresos tributarios':{tax:'Recaudación provincial',grossTax:'Ingresos Brutos',propertyTax:'Inmobiliario',vehicleTax:'Automotores',stampTax:'Sellos',ron:'Recursos tributarios de origen nacional'},
+  'Otros organismos':{ioma:'Gasto de IOMA'}
 };
 const historicOptions=Object.assign({},...Object.values(historicGroups));
 const taxMetrics=['tax','grossTax','propertyTax','vehicleTax','stampTax'];
 function historicAmount(row,metric){
+  if(metric==='ron')return extraFiscal.ronAnnual[row.year];
+  if(metric==='ioma')return Object.values(extraFiscal.ioma[row.year]).reduce((total,value)=>total+value,0);
   const breakdown=fiscal.execution[row.year];
   return row[metric] ?? breakdown.purpose[metric] ?? breakdown.economic[metric] ?? fiscal.taxes.annual[row.year][taxMetrics.indexOf(metric)];
 }
 function historyView(q){
   const metric=Object.hasOwn(historicOptions,q.get('serie'))?q.get('serie'):'spending';
   const ratio=metric==='balance'||metric==='pbgShare';
-  const rows=metric==='balance'?history:history.filter(x=>metric==='pbgShare'?fiscal.pbg[x.year]:x.ipc);
+  const observed=metric==='balance'?history:history.filter(x=>metric==='pbgShare'?fiscal.pbg[x.year]:x.ipc&&(metric!=='ioma'||extraFiscal.ioma[x.year]));
+  const withBudget=metric==='spending';
+  const rows=withBudget?[...observed,...budgetRefs]:observed;
   const val=r=>metric==='balance'?100*r.balance/r.income:metric==='pbgShare'?100*r.spending/fiscal.pbg[r.year]:historicAmount(r,metric)*historicPrice(r)/1e12;
   const display=x=>ratio?digits(x,1)+'%':money(x*1e12);
   const note=metric==='pbgShare'?'Gasto devengado como porcentaje del Producto Bruto Geográfico (PBG), el valor de lo que produce la provincia.':metric==='balance'?'Saldo después de intereses, como porcentaje de los ingresos de cada año.':'Billones de pesos a precios promedio de 2025, ajustados con el IPC de la región Pampeana.';
-  const seriesSource=taxMetrics.includes(metric)?source('taxTables','Recaudación provincial'):Object.hasOwn(historicGroups['Para qué se gastó'],metric)?source('functions','Ejecución por finalidad y función'):source('history','Serie APNF de Nación');
-  const chosen=rows.find(r=>r.year===Number(q.get('anio')))||rows.at(-1);
+  const separateSource={ron:'ron',ioma:'ioma'};
+  const seriesSource=separateSource[metric]?source(separateSource[metric]):taxMetrics.includes(metric)?source('taxTables','Recaudación provincial'):Object.hasOwn(historicGroups['Para qué se gastó'],metric)?source('functions','Ejecución por finalidad y función'):source('history','Serie APNF de Nación');
+  const chosen=rows.find(r=>r.year===Number(q.get('anio')))||observed.at(-1);
   const span=Math.max(...rows.map(val))-Math.min(...rows.map(val));
   const rough=(Math.max(...rows.map(val),0)-Math.min(...rows.map(val),0))/4 || span/4 || 1;
   const pow=Math.pow(10,Math.floor(Math.log10(rough)));
@@ -241,27 +287,38 @@ function historyView(q){
   const points=rows.map((r,i)=>[x(i),y(val(r))]);
   const ticks=Array.from({length:Math.round((hi-lo)/step)+1},(_,i)=>lo+i*step);
   const cx=rows.indexOf(chosen);
-  return intro('EJECUCIÓN PROVINCIAL','Cómo cambiaron las cuentas','Recorré lo que efectivamente ingresó y lo que se devengó. Cada gráfico indica si mide pesos ajustados o el saldo sobre los ingresos.')+
+  const legend=withBudget?'<ul class="chart-legend small"><li>Gasto ejecutado hasta 2025</li><li>Proyección 2026 y proyecto 2027</li></ul>':'';
+  const stageHref=chosen.stage?source('project','Ver documento','#page='+chosen.page):'';
+  const iomaComposition=metric==='ioma'?'<div class="comparison"><h3>Cómo se compuso el gasto en '+chosen.year+'</h3>'+
+    bars(Object.entries(extraFiscal.ioma[chosen.year]).sort((a,b)=>b[1]-a[1]).map(([label,amount])=>[label,amount*historicPrice(chosen),val(chosen)*1e12,'']))+'</div>':'';
+  return intro('CUENTAS PÚBLICAS BONAERENSES','Cómo cambiaron las cuentas','Consultá la ejecución histórica y las referencias presupuestarias para 2026 y 2027.')+
     '<div class="history-controls"><label class="field">Qué querés ver<select id="history-metric">'+Object.entries(historicGroups).map(([group,options])=>'<optgroup label="'+group+'">'+Object.entries(options).map(([k,v])=>'<option value="'+k+'"'+(k===metric?' selected':'')+'>'+v+'</option>').join('')+'</optgroup>').join('')+'</select></label><label class="field">Consultar un año<select id="history-year">'+rows.map(r=>'<option value="'+r.year+'"'+(r===chosen?' selected':'')+'>'+r.year+'</option>').join('')+'</select></label></div>'+
-    '<section class="panel"><h2>'+historicOptions[metric]+'</h2><p class="small">'+note+'</p>'+
+    '<section class="panel"><h2>'+historicOptions[metric]+'</h2><p class="small">'+note+'</p>'+legend+
     '<svg class="chart" viewBox="0 0 '+width+' '+height+'" aria-label="'+historicOptions[metric]+', '+rows[0].year+' a '+rows.at(-1).year+'" role="img">'+ticks.map(t=>'<line class="grid'+(t===0?' zero':'')+'" x1="'+left+'" x2="'+(width-right)+'" y1="'+y(t)+'" y2="'+y(t)+'"/><text x="'+(left-8)+'" y="'+(y(t)+4)+'" text-anchor="end">'+digits(t,Number.isInteger(t)?0:1)+(ratio?'%':'')+'</text>').join('')+
-    '<path class="line" d="'+monotonePath(points)+'"/>'+rows.map((r,i)=>'<circle '+(i===cx?'class="active" ':'')+'data-year="'+r.year+'" cx="'+points[i][0]+'" cy="'+points[i][1]+'" r="'+(rows.length>13?3.5:5)+'"><title>'+r.year+': '+display(val(r))+'</title></circle>'+((rows.length<13?(!narrow||i%2===0):i%4===0||i===rows.length-1)?'<text x="'+x(i)+'" y="'+(height-12)+'" text-anchor="middle">'+r.year+'</text>':'')).join('')+'</svg>'+
-    '<div class="chart-value"><strong>'+chosen.year+' · '+historicOptions[metric]+'</strong><span class="metric '+(metric==='balance'&&val(chosen)<0?'red':'')+'">'+display(val(chosen))+'</span></div>'+
-    '<p class="small chart-caption">'+seriesSource+(metric==='pbgShare'?' · '+source('pbg','PBG oficial de la Provincia'):ratio?'':' · '+source('ipc','IPC de INDEC'))+(taxMetrics.includes(metric)?'':' · Ejecución provisoria.')+'</p></section>'+
+    '<path class="line" d="'+monotonePath(points.slice(0,observed.length))+'"/>'+
+    (withBudget?'<path class="line budget-line" d="M'+points.slice(observed.length-1).map(point=>point.join(',')).join(' L')+'"/>':'')+
+    rows.map((r,i)=>'<circle class="'+(r.stage?'budget-point ':'')+(i===cx?'active':'')+'" data-year="'+r.year+'" cx="'+points[i][0]+'" cy="'+points[i][1]+'" r="'+(rows.length>13?3.5:5)+'"><title>'+r.year+' · '+(r.stage?r.stage+' · ':'')+display(val(r))+'</title></circle>'+
+      ((r.stage||(rows.length<13?(!narrow||i%2===0):i%4===0||i===rows.length-1))?'<text class="'+(r.stage?'stage-year':'')+'" x="'+x(i)+'" y="'+(height-12)+'" text-anchor="middle">'+(narrow&&r.stage?'’'+String(r.year).slice(2):r.year)+'</text>':'')).join('')+'</svg>'+
+    '<div class="chart-value"><strong>'+chosen.year+' · '+(chosen.stage||historicOptions[metric])+'</strong><span class="metric '+(metric==='balance'&&val(chosen)<0?'red':'')+'">'+display(val(chosen))+'</span></div>'+
+    (chosen.stage?'<p class="small compact">'+money(chosen.spending)+' en pesos de '+chosen.year+' · '+stageHref+'</p>':'')+iomaComposition+
+    '<p class="small chart-caption">'+seriesSource+(metric==='pbgShare'?' · '+source('pbg','PBG oficial de la Provincia'):ratio?'':' · '+source('ipc','IPC de INDEC'))+'</p>'+
+    (withBudget?'<p class="small compact no-bottom">Para 2026 se muestra el cierre estimado por el Ejecutivo. El crédito vigente mide el monto autorizado para gastar. Para 2027 se usa el proyecto de ley con una inflación promedio proyectada del '+inflationLabel+'. '+source('project','Cuadro 5 del Mensaje','#page=82')+' · <a href="#fuentes">Cómo se calcula</a></p>':'')+
+    (metric==='ioma'?'<p class="small compact no-bottom">Serie propia de IOMA, fuera del total de la Administración Provincial mostrado para 2027.</p>':'')+'</section>'+
     '<details class="income-details"><summary>Ver los datos del gráfico</summary><div class="table-wrap"><table><thead><tr><th scope="col">Año</th><th scope="col" class="num">'+historicOptions[metric]+'</th></tr></thead><tbody>'+
-    rows.map(r=>'<tr><th scope="row">'+r.year+'</th><td class="num">'+display(val(r))+'</td></tr>').join('')+'</tbody></table></div></details>';
+    rows.map(r=>'<tr><th scope="row">'+r.year+(r.stage?' · '+r.stage:'')+'</th><td class="num">'+display(val(r))+'</td></tr>').join('')+'</tbody></table></div></details>';
 }
 
 function methodology(){
   const texts={
-    project:'El Mensaje y el articulado son un proyecto, no una ley ni gasto ejecutado. Los totales exactos se toman de los artículos 4° y 7°. Los rubros redondeados proceden del Mensaje.',
+    project:'PDF oficial de 286 páginas. Los totales exactos salen de los artículos 4° y 7° y el gasto por naturaleza económica de la Planilla 1. En el Cuadro 8 se usa la cifra tabulada de Administración Gubernamental ($11.005.273 millones), que concilia con el total redondeado.',
+    projectRecord:'Ficha legislativa del proyecto provincial. El texto original reúne el Mensaje, el articulado y las planillas desde la página 131.',
     presentation:'Se usa para cotejar el resultado primario, los intereses y la composición económica. Los montos destacados no salariales no representan todo el gasto de cada área.',
     budget:'Administración Central, organismos descentralizados e instituciones previsionales. La cifra votada corresponde al presupuesto inicial de todo el ejercicio.',
     areas:'48 filas del artículo 5°, transcritas en el cuadro publicado por Diputados Bonaerenses. Se excluyen los desgloses internos y los entes no consolidados. La suma coincide con el artículo 4°. Los porcentajes del sitio se calculan sobre el gasto total del proyecto.',
     works:'Selección de filas revisadas en la Planilla 36. Se muestra el crédito de la etiqueta ambiental, con enlace a la página. Una obra compartida aparece en los partidos nombrados sin repartir su monto. No se suman las obras a las transferencias.',
     transfers:'Hoja Acumulado de las planillas de septiembre de 2026 y diciembre de 2025. Total, coparticipación bruta y Fondo de Financiamiento Educativo; el resto es la diferencia. Los cortes tienen distinta duración.',
     geo:'Polígonos de partidos de Buenos Aires de Georef (datos IGN), unidos a las planillas por nombre. Cuatro variantes de denominación se resolvieron explícitamente. Los colores agrupan montos en quintiles.',
-    history:'Hoja Buenos Aires de la serie APNF 2005–2025. Recursos percibidos y gastos devengados, datos provisorios. Se evita empalmar esta ejecución con el proyecto 2027.',
+    history:'Hoja Buenos Aires de la serie APNF 2005–2025. Recursos percibidos y gastos devengados, datos provisorios. El tramo punteado presenta referencias de otra etapa presupuestaria y la cobertura del Mensaje puede diferir de la serie nacional.',
     ipc:'Las series históricas usan el IPC general de la región Pampeana. Cada monto anual se multiplica por IPC promedio 2025 / IPC promedio del año. La serie real empieza en 2017, primer año con 12 meses de esta fuente.',
     advance:'Columna Buenos Aires del consolidado de la Administración Pública No Financiera (APNF). Acumulado enero a junio de 2026. Las adecuaciones metodológicas de Nación pueden diferir de una publicación provincial.',
     taxCatalog:'El CSV del catálogo mezcla valores en miles y millones. La visualización toma los importes de las planillas tributarias con su unidad indicada en cada hoja.',
@@ -269,13 +326,17 @@ function methodology(){
     muniCatalog:'Coparticipación bruta de los períodos con doce meses completos, en pesos de 2025. El total anual del catálogo difiere del publicado en las planillas acumuladas del mapa. Para Adolfo Alsina se omite 2021 por dos valores distintos para el mismo mes.',
     schoolCatalog:'Giros a los consejos escolares, comparados de enero a julio de cada año. Julio es el último mes de 2026 con importes en el archivo. Las filas vacías posteriores no se toman como cero.',
     pbg:'Para medir el peso del gasto sobre la economía bonaerense, se divide el gasto devengado de la APNF por el PBG de ese año a precios corrientes. El último PBG publicado es el de 2024.',
-    functions:'La serie histórica por finalidad y función conserva el total de su propia planilla. En 2024 este total difiere del esquema de ejecución general. El flujo de portada usa las finalidades del Mensaje 2027 y muestra la diferencia con su total exacto.',
+    functions:'La serie histórica por finalidad y función conserva el total de su propia planilla. En 2024 este total difiere del esquema de ejecución general. El flujo de portada usa las finalidades del Cuadro 8 del Mensaje 2027.',
     municipalFinance:'Informe provincial de los 135 municipios. El resultado y el número de municipios con superávit o déficit figuran en las páginas impresas 8 y 12. Los ingresos y gastos totales se reconstruyen a partir del gráfico 1.',
     bulletin:'Buscador de boletines municipales, donde se publican ordenanzas y otros actos locales.',
-    municipalDirectory:'Directorio externo para seguir explorando municipios. Las cifras fiscales del sitio provienen de publicaciones oficiales.'
+    municipalDirectory:'Directorio externo para seguir explorando municipios. Las cifras fiscales del sitio provienen de publicaciones oficiales.',
+    ron:'Serie nacional 2003–2025. Se suman los regímenes registrados para Buenos Aires y se ajustan por el IPC de la región Pampeana para los años que tienen doce meses de índice.',
+    ronOctober:'Acumulado enero–octubre de 2025 y 2026, en pesos de cada período. El total incluye la coparticipación federal y otros regímenes automáticos, incluida la compensación por el Consenso Fiscal.',
+    ioma:'Serie anual 2019–2024 en pesos, por tipo de erogación. IOMA tiene presupuesto propio en el art. 12 del Proyecto 2027. La serie se consulta por separado en Evolución.'
   };
   return intro('TRANSPARENCIA','Fuentes y metodología','Cada cifra tiene un documento de origen. Acá podés comprobar qué cubre y cómo se calculó.')+
     '<article class="panel comparison"><h2>Cómo se compara el proyecto 2027 con el votado 2026</h2><p>Se divide el monto nominal del proyecto por '+digits(1+inflation,3)+', para expresarlo en pesos de 2026 con el supuesto de inflación promedio anual de '+inflationLabel+'. Luego se compara con el crédito inicial de la Ley 15.557. Los organismos se emparejan por nombre; sus atribuciones pueden haber cambiado.</p><p class="small no-bottom">'+source('budget','Artículos 4° y 5°')+' · '+source('project','Mensaje 4527 y articulado')+'</p></article>'+
+    '<article class="panel comparison"><h2>Cómo se ajusta el tramo punteado del gasto total</h2><p>Para el IPC promedio de 2026 se usan diez meses observados de la región Pampeana. Noviembre y diciembre se estiman repitiendo la variación de octubre ('+digits((monthlyFactor-1)*100,1)+'% mensual). Para 2027 se aplica el supuesto de '+inflationLabel+' sobre ese promedio. Ambos gastos se expresan a precios promedio de 2025, la misma base que la serie histórica.</p><p class="small no-bottom">'+source('ipc','Serie mensual del INDEC')+' · '+source('project','Cierre estimado de 2026 · Cuadro 5','#page=82')+'</p></article>'+
     '<div class="source-list">'+Object.keys(sources).map(k=>'<article class="panel"><h3>'+source(k)+'</h3><p class="muted no-bottom">'+texts[k]+'</p></article>').join('')+'</div>';
 }
 function areaParams(input,group){
@@ -289,7 +350,7 @@ function openArea(area,fromLink=false){
   const base=priorAreas[area.id], now=in2026Pesos(area.amount);
   content.innerHTML='<p class="eyebrow">PROYECTO 2027 · '+groups[area.group]+'</p><h2 id="detail-title">'+esc(pretty(area.name))+'</h2><p class="metric">'+money(area.amount)+'</p><p class="muted">'+exact(area.amount)+' · '+share(area.amount,p.spending)+' del gasto propuesto.</p>'+
     (base?'<section class="comparison"><h3>'+signedPct(realChange(area.amount,base))+' real frente al votado 2026</h3>'+bars([['Votado 2026',base,Math.max(base,now),''],['Proyecto 2027, en pesos de 2026',now,Math.max(base,now),'income']])+'<p class="small compact">Comparación de créditos por organismo. Supuesto de inflación promedio 2027: '+inflationLabel+'. '+source('budget','Ley 15.557 · art. 5°')+'</p></section>':'')+
-    '<p class="small">'+source('project','Art. 5° del proyecto')+' · '+source('areas','Ver cuadro, pág. '+area.page,'#page='+area.page)+'</p>';
+    '<p class="small">'+source('project','Art. 5° del proyecto','#page=96')+' · '+source('areas','Ver cuadro, pág. '+area.page,'#page='+area.page)+'</p>';
   if(!dialog.open)dialog.showModal();
 }
 function render({focus=false, keepScroll=false}={}){

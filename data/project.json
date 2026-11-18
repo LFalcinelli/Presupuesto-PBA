@@ -6,6 +6,12 @@
   "interestMillions": 1947670,
   "currentMillions": 54606416,
   "capitalMillions": 4048294,
+  "multiYear": [
+    {"year":2027,"balanceMillions":-2152699},
+    {"year":2028,"balanceMillions":-588249},
+    {"year":2029,"balanceMillions":475548}
+  ],
+  "staffing": {"permanent":364747,"temporary":166678},
   "prior": {"spending": 43021244867935, "income": 41484520658935},
   "incomeGroups": [
     {"name": "Impuestos provinciales", "millions": 22043268, "detail": "Recaudación que el proyecto estima obtener de los impuestos propios de la Provincia.", "children": [["Ingresos Brutos", 16713438], ["Sellos", 2170016], ["Inmobiliario", 1206552], ["Automotor", 860520], ["Otros impuestos provinciales", 1092742]]},

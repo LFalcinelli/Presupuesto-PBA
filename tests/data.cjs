@@ -38,9 +38,26 @@ t('El flujo y la comparación real mantienen las bases de sus documentos',()=>{
   assert.deepEqual(Object.keys(prior).sort(),dataset('areas').map(r=>r.id).sort());
   assert.equal(Object.values(prior).reduce((a,b)=>a+b,0),p.prior.spending);
   assert.equal(inflation2027,.214);
-  assert.equal(p.spending-purpose.reduce((a,r)=>a+r.millions*1e6,0),39589891);
-  assert(Math.abs(p.spending-economic.reduce((a,r)=>a+r.millions*1e6,0))<2e6);
+  assert.equal(Math.round(p.spending/1e6),purpose.reduce((a,r)=>a+r.millions,0));
+  assert.equal(p.spending,economic.reduce((a,r)=>a+Math.round(r.millions*1e6),0));
+  for(const r of economic.filter(x=>x.children)){
+    assert.equal(Math.round(r.millions*1e6),r.children.reduce((total,[,m])=>total+Math.round(m*1e6),0));
+  }
   assert.equal((100*(p.spending/(1+inflation2027)/p.prior.spending-1)).toFixed(1),'12.3');
+});
+t('Las referencias nuevas mantienen sus coberturas y valores de origen',()=>{
+  const {closing2026,ipc2026,ronAnnual,ronRecent,ioma}=dataset('additional-fiscal');
+  const p=dataset('project');
+  assert.equal(closing2026.spendingMillions,46521737);
+  assert.equal(closing2026.incomeMillions-closing2026.spendingMillions,closing2026.balanceMillions);
+  assert.equal(ipc2026.length,10);
+  assert.equal(ipc2026.at(-1),12783.6887);
+  assert.equal(p.staffing.permanent+p.staffing.temporary,531425);
+  assert.equal(p.multiYear[0].balanceMillions,Math.round((p.income-p.spending)/1e6));
+  assert.equal(ronRecent[2026].totalMillions,14915314);
+  assert(ronRecent[2026].totalMillions>ronRecent[2026].cfiMillions);
+  assert.equal(Object.keys(ronAnnual).length,23);
+  assert.equal(Object.values(ioma[2024]).reduce((total,v)=>total+v,0),1381571123292);
 });
 t('Las nuevas series conservan unidades, cortes y cobertura',()=>{
   const f=dataset('fiscal-series');
