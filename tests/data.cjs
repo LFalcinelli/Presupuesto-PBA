@@ -121,3 +121,18 @@ t('Las series nuevas conservan cobertura y unidades',()=>{
   const s=dataset('sources');
   for(const k of ['budget2026','works2026','top','employment','muniMonthly','population','deflatorSplice'])assert(s[k]?.[1]?.startsWith('https://'),k);
 });
+
+t('La ejecución provincial del semestre cierra en sus identidades',()=>{
+  const e=dataset('execution-2026'),v=id=>e.rows.find(r=>r.id===id);
+  for(const k of ['h1_2025','h1_2026']){
+    const near=(a,b)=>assert(Math.abs(a-b)<=2,k+': '+a+' vs '+b);
+    near(v('income')[k],v('currentIncome')[k]+v('capitalIncome')[k]);
+    near(v('spending')[k],v('current')[k]+v('capital')[k]);
+    near(v('financialResult')[k],v('income')[k]-v('spending')[k]);
+    near(v('primaryResult')[k],v('financialResult')[k]+v('interest')[k]);
+    near(v('ownTax')[k],['grossTax','propertyTax','stampTax','vehicleTax','otherTax'].reduce((s,id)=>s+v(id)[k],0));
+    near(v('capital')[k],v('investment')[k]+v('capitalTransfers')[k]+v('financialInvestment')[k]);
+  }
+  assert(e.priceRatio>1.2&&e.priceRatio<1.5);
+  assert.equal(dataset('sources').execution2026[1].slice(0,8),'https://');
+});

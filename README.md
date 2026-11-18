@@ -8,6 +8,7 @@ Dirección pública: [Gasto Público PBA](https://lfalcinelli.github.io/Presupue
 - `npm run build`: sincroniza `assets/data.js` con `data/`. El sitio funciona también abriendo `index.html`, sin servidor ni servicios externos.
 - `npm run build:pages`: prepara los archivos públicos en `dist/`. GitHub Actions valida los datos y publica esa carpeta desde `main`.
 - `npm test`: controles de reconciliación, cobertura y referencias.
+- `node tests/smoke.cjs`: recorrido visual con Playwright (375 y 1440 px, claro y oscuro); no corre en GitHub Actions.
 
 El sitio muestra el Proyecto 2027, el crédito inicial de 2026 y la ejecución en etapas identificadas. El flujo de portada se puede compartir con la composición, la unidad y las ramas abiertas. Los importes se guardan en pesos enteros, salvo partidas expresamente transcritas en millones. Los originales de trabajo quedan fuera del sitio.
 
@@ -18,7 +19,7 @@ Tipografía local [DM Sans](https://github.com/googlefonts/dm-fonts) bajo [SIL O
 ## Estructura (rediseño de noviembre de 2026)
 
 - **Inicio:** cifras del proyecto, flujo de recursos y gastos, y cuatro claves enlazadas.
-- **Presupuesto 2027:** resumen en cascada, composición en rectángulos (finalidad, tipo de gasto y organismo), variaciones reales frente al votado 2026 (en % y en pesos), recursos, presupuesto votado 2026 (Planilla A) y planillas.
+- **Presupuesto 2027:** resumen en cascada, composición en rectángulos (finalidad, tipo de gasto y organismo), variaciones reales frente al votado 2026 (en % y en pesos), recursos, presupuesto votado 2026 (Planilla A) con la ejecución del primer semestre según el informe provincial, y planillas.
 - **Mi municipio:** mapa con cinco indicadores (por habitante, total, variación real, coparticipación y consejos escolares), ranking de los 135 partidos, comparación con otro partido o el promedio, series y obras 2026 (Planilla H) y 2027.
 - **Historia:** cada serie en pesos de 2025, pesos de cada año, % del PBG o por habitante desde 2005; comparación entre dos años; composición en el tiempo (finalidades, tipo de gasto y recaudación 1984–2025); empleo público y salario medio real.
 

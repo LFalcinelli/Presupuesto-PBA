@@ -28,5 +28,6 @@
   "employment": ["Ocupación y salarios del sector público provincial", "https://www.argentina.gob.ar/economia/sechacienda/coordinacion-fiscal-provincial/ejecucion-presupuestaria-provincial/ocupacion-y"],
   "muniMonthly": ["Datos Abiertos PBA · Transferencias mensuales a municipios", "https://catalogo.datos.gba.gob.ar/dataset/transferencias-municipios"],
   "population": ["Datos Abiertos PBA · Población por partido", "https://catalogo.datos.gba.gob.ar/dataset/poblacion"],
-  "deflatorSplice": ["Gasto Público CABA · IPC empalmado 2005–2016", "https://github.com/LFalcinelli/Presupuesto-CABA/blob/main/data/history/inflation-long.json"]
+  "deflatorSplice": ["Gasto Público CABA · IPC empalmado 2005–2016", "https://github.com/LFalcinelli/Presupuesto-CABA/blob/main/data/history/inflation-long.json"],
+  "execution2026": ["Provincia · Informe de ejecución presupuestaria al II trimestre 2026", "https://www.gba.gob.ar/hacienda_y_finanzas/direccion_provincial_de_presupuesto_publico/ejecucion_presupuestaria"]
 }

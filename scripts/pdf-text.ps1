@@ -67,6 +67,28 @@ function Hex([string]$h) {
   }
   $o.ToString()
 }
+function Lit([string]$s) {
+  $o = New-Object Text.StringBuilder
+  for ($i = 0; $i -lt $s.Length; $i++) {
+    $c = $s[$i]
+    if ($c -ne '\') { [void]$o.Append($c); continue }
+    $i++; if ($i -ge $s.Length) { break }
+    $n = $s[$i]
+    if ($n -match '[0-7]') { $oct = "$n"; while ($oct.Length -lt 3 -and ($i + 1) -lt $s.Length -and $s[$i + 1] -match '[0-7]') { $i++; $oct += $s[$i] }; [void]$o.Append([char][Convert]::ToInt32($oct, 8)) }
+    elseif ($n -ceq 'n' -or $n -ceq 'r') { [void]$o.Append(' ') } elseif ($n -ceq 't') { [void]$o.Append(' ') } else { [void]$o.Append($n) }
+  }
+  $o.ToString()
+}
+function Parts([string]$arr) {
+  $o = New-Object Text.StringBuilder
+  foreach ($p in [regex]::Matches($arr, '\((?:\\.|[^\\)])*\)|<[0-9A-Fa-f]*>|-?\d+\.?\d*')) {
+    $v = $p.Value
+    if ($v.StartsWith('(')) { [void]$o.Append((Lit $v.Substring(1, $v.Length - 2))) }
+    elseif ($v.StartsWith('<')) { [void]$o.Append((Hex $v.Substring(1, $v.Length - 2))) }
+    elseif ([double]$v -lt -200) { [void]$o.Append(' ') }
+  }
+  $o.ToString()
+}
 $sb = New-Object Text.StringBuilder
 $page = 0
 foreach ($s in $streams) {
@@ -75,11 +97,12 @@ foreach ($s in $streams) {
   $items = New-Object System.Collections.Generic.List[object]
   foreach ($bt in [regex]::Matches($s, 'BT(.*?)ET', 'Singleline')) {
     $x = 0.0; $y = 0.0; $lx = 0.0; $ly = 0.0
-    foreach ($t in [regex]::Matches($bt.Groups[1].Value, '(-?[\d.]+)\s+(-?[\d.]+)\s+Td|(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+Tm|<([0-9A-Fa-f]*)>\s*Tj|\[(.*?)\]\s*TJ')) {
+    foreach ($t in [regex]::Matches($bt.Groups[1].Value, '(-?[\d.]+)\s+(-?[\d.]+)\s+Td|(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+Tm|<([0-9A-Fa-f]*)>\s*Tj|\[(.*?)\]\s*TJ|\(((?:\\.|[^\\)])*)\)\s*Tj')) {
       if ($t.Groups[1].Success) { $lx += [double]$t.Groups[1].Value; $ly += [double]$t.Groups[2].Value; $x = $lx; $y = $ly }
       elseif ($t.Groups[3].Success) { $lx = [double]$t.Groups[7].Value; $ly = [double]$t.Groups[8].Value; $x = $lx; $y = $ly }
       elseif ($t.Groups[9].Success) { $items.Add([pscustomobject]@{x = $x; y = $y; t = (Hex $t.Groups[9].Value)}) }
-      else { $txt = (([regex]::Matches($t.Groups[10].Value, '<([0-9A-Fa-f]*)>') | ForEach-Object { Hex $_.Groups[1].Value }) -join ''); $items.Add([pscustomobject]@{x = $x; y = $y; t = $txt}) }
+      elseif ($t.Groups[10].Success) { $items.Add([pscustomobject]@{x = $x; y = $y; t = (Parts $t.Groups[10].Value)}) }
+      else { $items.Add([pscustomobject]@{x = $x; y = $y; t = (Lit $t.Groups[11].Value)}) }
     }
   }
   [void]$sb.AppendLine("=====PAGINA $page")

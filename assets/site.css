@@ -93,3 +93,4 @@ h1, h2 { text-wrap: balance; }
 .table-wrap{max-width:100%;overflow-x:auto}.grid-two>*,.map-grid>*{min-width:0}@media(max-width:560px){th,td{padding:.55rem .35rem}}
 .mini{min-width:0}@media(max-width:560px){.mini strong{font-size:1rem;white-space:normal}}
 @media(max-width:560px){.nav-inner{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;justify-content:flex-start;gap:18px}.nav-inner::-webkit-scrollbar{display:none}.nav-inner>a{font-size:.86rem}}
+.grid-two .diverging li{grid-template-columns:1fr auto;gap:4px 10px}.grid-two .dv-track{grid-column:1/-1;order:3}

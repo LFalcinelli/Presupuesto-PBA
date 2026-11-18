@@ -206,9 +206,27 @@ function budget2026View(q){
     (mode==='function'?'<ul class="chart-legend multi swatch">'+[['Administración gubernamental',1],['Seguridad y justicia',2],['Servicios sociales',3],['Servicios económicos',4],['Deuda',5]].map(([n,c])=>'<li style="--dot:'+finalColors[c]+'">'+n+'</li>').join('')+'</ul>':'')+
     treemap(mode==='function'?fn:obj,{total,format:money,label:'Presupuesto 2026 '+view2026[mode].toLowerCase(),height:narrow()?420:430})+
     '<p class="small compact no-bottom">'+source('budget2026','Planilla A · finalidad, función y objeto del gasto')+'</p></div></section>'+
-    '<section class="section grid-two"><article class="panel"><h3>Enero–junio 2026</h3>'+bars([['Ingresos percibidos',a.income,Math.max(a.income,a.spending),'income'],['Gasto devengado',a.spending,Math.max(a.income,a.spending),'']])+'<p class="small compact">Resultado financiero: <strong>'+money(a.balance)+'</strong>. Corte provisorio; no es el resultado anual.</p>'+source('advance','Ejecución provincial · segundo trimestre')+'</article>'+
+    execution2026(q)+
+    '<section class="section grid-two"><article class="panel"><h3>Comparación nacional del semestre</h3><p class="small">La serie de Nación (APNF) para el mismo corte registra ingresos por '+money(a.income)+' y gastos por '+money(a.spending)+', con un resultado de '+money(a.balance)+'. Difiere levemente del informe provincial por adecuaciones metodológicas.</p>'+source('advance','Ejecución provincial · cuadro APNF')+'</article>'+
     '<article class="panel"><h3>Proyección oficial del cierre 2026</h3>'+bars([['Ingresos estimados',budgetRefs[0].income,budgetRefs[0].spending,'income'],['Gasto estimado',budgetRefs[0].spending,budgetRefs[0].spending,'']])+
     '<p class="small compact no-bottom">Déficit proyectado: <strong class="red">'+money(extraFiscal.closing2026.balanceMillions*million)+'</strong>. '+source('project','Cuadro 5 del Mensaje 2027','#page=82')+'</p></article></section>';
+}
+const execMetrics={pct:'Variación real %',amount:'Diferencia en pesos de 2026'};
+function execution2026(q){
+  const ex=PBA_DATA['execution-2026'], row=id=>ex.rows.find(r=>r.id===id), m=1e6;
+  const metric=Object.hasOwn(execMetrics,q.get('medida26'))?q.get('medida26'):'pct';
+  const real=r=>100*(r.h1_2026/(r.h1_2025*ex.priceRatio)-1), diff=r=>(r.h1_2026-r.h1_2025*ex.priceRatio)*m;
+  const list=ids=>ids.map(row).map(r=>({id:r.id,label:r.label,value:metric==='pct'?real(r):diff(r),note:money(r.h1_2026*m)+' en el semestre'}));
+  const fmt=metric==='pct'?signedPct:signedMoney;
+  const inc=list(['grossTax','propertyTax','stampTax','vehicleTax','nationalTax','socialContributions','currentTransfersIn','nonTax']);
+  const exp=list(['staff','benefits','municipalities','privateTransfers','services','consumption','interest','investment','capitalTransfers','financialInvestment']);
+  const max=Math.max(...[...inc,...exp].map(r=>Math.abs(r.value)));
+  const income=row('income'),spending=row('spending'),fin=row('financialResult'),prim=row('primaryResult');
+  return '<section class="section">'+brief('Enero–junio 2026','Qué se ejecutó en el primer semestre','Ingresos percibidos y gastos devengados, frente al mismo semestre de 2025 y descontando la inflación ('+digits((ex.priceRatio-1)*100,1)+'% entre ambos semestres).')+
+    '<div class="metrics">'+card('Ingresos',money(income.h1_2026*m),signedPct(real(income))+' real frente a 2025')+card('Gastos',money(spending.h1_2026*m),signedPct(real(spending))+' real frente a 2025')+card('Resultado financiero',money(fin.h1_2026*m),'Primario: '+money(prim.h1_2026*m)+'. No es el resultado anual.','red')+'</div>'+
+    '<div class="panel section-tight"><div class="flow-toolbar">'+toggles('exec-metric',execMetrics,metric,'Medida')+'</div>'+
+    '<div class="grid-two"><div><h3 class="compact">Ingresos</h3>'+diverging(inc,{format:fmt,label:'Variación real de los ingresos, primer semestre 2026',max})+'</div><div><h3 class="compact">Gastos</h3>'+diverging(exp,{format:fmt,label:'Variación real de los gastos, primer semestre 2026',max})+'</div></div>'+
+    '<p class="small compact no-bottom">El informe provincial deflacta mes a mes; aquí se usa el cociente del IPC promedio de cada semestre, por eso alguna variación puede diferir levemente de la publicada. '+source('execution2026','Informe de ejecución · II trimestre 2026')+'</p></div></section>';
 }
 function annexes(){
   const {permanent,temporary}=p.staffing, positions=permanent+temporary;
@@ -372,6 +390,7 @@ function metricModes(metric){
   return modes;
 }
 function historyView(q){
+  if(q.get('serie')==='pbgShare'){q.set('serie','spending');q.set('modo','pbg');}
   const metric=Object.hasOwn(historicOptions,q.get('serie'))?q.get('serie'):'spending';
   const available=metricModes(metric), mode=Object.hasOwn(available,q.get('modo'))?q.get('modo'):Object.keys(available)[0];
   const first=employmentMetrics[metric]?(mode==='count'?1987:2005):taxMetrics.includes(metric)&&mode==='nominal'?1999:2005;
@@ -451,7 +470,7 @@ function employmentSection(){
 function methodology(){
   const groupsOfSources={
     'Proyecto 2027':['project','projectRecord','presentation','areas','works'],
-    'Presupuesto 2026':['budget','budget2026','works2026','advance'],
+    'Presupuesto 2026':['budget','budget2026','works2026','execution2026','advance'],
     'Series históricas':['history','functions','top','taxCatalog','taxTables','ron','ronOctober','employment','pbg','ipc','deflatorSplice','ioma'],
     'Municipios':['transfers','muniCatalog','muniMonthly','population','schoolCatalog','geo','municipalFinance','bulletin','municipalDirectory']
   };
@@ -471,7 +490,8 @@ function methodology(){
     history:'Hoja Buenos Aires de la serie APNF 2005–2025. Recursos percibidos y gastos devengados, datos provisorios.',
     ipc:'Desde 2017, IPC general de la región Pampeana: cada monto anual se multiplica por IPC promedio 2025 / IPC promedio del año.',
     deflatorSplice:'Para 2005–2016 se usa el IPC 9 provincias empalmado que publica el sitio Gasto Público CABA, enlazado al IPC Pampeana por el cociente de los promedios de 2017. No es una serie oficial homogénea: se indica como estimación.',
-    advance:'Columna Buenos Aires del consolidado APNF, acumulado enero a junio de 2026.',
+    advance:'Columna Buenos Aires del consolidado APNF, acumulado enero a junio de 2026. Se muestra como contraste del informe provincial.',
+    execution2026:'Esquema ahorro-inversión de la Administración Pública No Financiera, devengado, primer semestre 2025 (definitivo) y 2026 (provisorio). La variación real usa el cociente del IPC nacional promedio de cada semestre ('+digits((PBA_DATA['execution-2026'].priceRatio-1)*100,1)+'%).',
     taxCatalog:'El CSV del catálogo mezcla valores en miles y millones; se toman las planillas tributarias con su unidad.',
     taxTables:'Suma mensual de la recaudación de origen provincial, 1999–2025 y enero–septiembre de 2026.',
     top:'Serie de recursos tributarios de origen provincial 1984–2025 (Dirección de Recursos Provinciales). Se usa sólo la composición por impuesto de cada año, que no depende de cambios de moneda.',
@@ -564,6 +584,7 @@ main.addEventListener('click',e=>{
   if(d.spendView)rerender('presupuesto',{...q,vista:'gasto',composicion:d.spendView},'[data-spend-view="'+d.spendView+'"]');
   if(d.changeGroup)rerender('presupuesto',{...q,vista:'cambios',agrupar:d.changeGroup},'[data-change-group="'+d.changeGroup+'"]');
   if(d.changeMetric)rerender('presupuesto',{...q,vista:'cambios',medida:d.changeMetric},'[data-change-metric="'+d.changeMetric+'"]');
+  if(d.execMetric)rerender('presupuesto',{...q,vista:'v2026',medida26:d.execMetric},'[data-exec-metric="'+d.execMetric+'"]');
   if(d.view2026)rerender('presupuesto',{...q,vista:'v2026',mirada:d.view2026},'[data-view-2026="'+d.view2026+'"]');
   if(d.historyMode)rerender('evolucion',{...q,modo:d.historyMode},'[data-history-mode="'+d.historyMode+'"]');
   if(d.historyComposition){choose('evolucion',{...q,composicion:d.historyComposition});document.querySelector('#composicion-historica').outerHTML=historyComposition(readRoute().q);document.querySelector('[data-history-composition="'+d.historyComposition+'"]')?.focus({preventScroll:true});}
