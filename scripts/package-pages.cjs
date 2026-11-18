@@ -4,7 +4,7 @@ const path = require('node:path');
 require('./pack-data.cjs');
 const root = path.resolve(__dirname,'..');
 const dist = path.join(root,'dist');
-const staticFiles = ['chart-paths.js','data.js','favicon.svg','number-format.js','site.css','site.js','fiscal-flow.css','fiscal-flow.js','dm-sans-latin.woff2','dm-sans-OFL.txt'];
+const staticFiles = ['chart-paths.js','charts.js','data.js','favicon.svg','number-format.js','site.css','site.js','fiscal-flow.css','fiscal-flow.js','dm-sans-latin.woff2','dm-sans-OFL.txt'];
 const sha = process.env.SITE_BUILD || '';
 if (sha && !/^[a-f0-9]{40}$/.test(sha)) throw new Error('SITE_BUILD debe ser un SHA de Git');
 fs.mkdirSync(path.join(dist,'assets'),{recursive:true});

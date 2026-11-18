@@ -84,3 +84,40 @@ t('Las nuevas series conservan unidades, cortes y cobertura',()=>{
     assert(economic.staff>economic.goods);
   }
 });
+
+t('Las planillas 2026 cierran y coinciden con el votado',()=>{
+  const b=dataset('budget-2026'),p=dataset('project');
+  const total=b.rows.find(r=>r.code==='total');
+  assert.equal(total.total,p.prior.spending);
+  const keys=Object.keys(b.objects);
+  for(const r of b.rows)assert(Math.abs(keys.reduce((s,k)=>s+r[k],0)-r.total)<=2,r.code);
+  const finalidades=b.rows.filter(r=>/^\d\.0\.0$/.test(r.code));
+  assert.equal(finalidades.length,5);
+  assert(Math.abs(finalidades.reduce((s,r)=>s+r.total,0)-total.total)<=5);
+  const w=dataset('works-2026'),ids=new Set(dataset('municipios').districts.map(d=>d.id));
+  assert(w.works.length>900);
+  for(const o of w.works){assert(ids.has(o.district));assert(o.name.length>3);assert(o.a2026>=0&&o.a2027>=0);}
+  assert.deepEqual([...new Set(w.works.map(o=>o.district))].sort(),[...w.districts].sort());
+});
+t('Las series nuevas conservan cobertura y unidades',()=>{
+  const d=dataset('deflator').index,h=dataset('history');
+  for(let y=2005;y<=2025;y++)assert(d[y]>0,String(y));
+  for(const r of h.filter(r=>r.ipc))assert.equal(d[r.year],r.ipc);
+  const e=dataset('employment');
+  assert.equal(e.years.length,39);
+  for(const k of ['staff','per1000','salary'])assert.equal(e[k].length,39);
+  assert.equal(Object.keys(e.per1000Provinces2025).length,24);
+  assert.equal(e.per1000.at(-1),e.per1000Provinces2025['BUENOS AIRES']);
+  const top=dataset('tax-history').taxes;
+  assert.equal(Object.keys(top['ingresos brutos']).length,42);
+  const m=dataset('municipal-plus');
+  assert.equal(Object.keys(m.districts).length,135);
+  assert(m.priceRatio>1&&m.priceRatio<2);
+  for(const x of Object.values(m.districts)){
+    assert(x.pop2022>0);
+    for(const k of ['jan_aug_2025','jan_aug_2026'])assert(x[k][0]>=x[k][1]+x[k][2]);
+  }
+  assert.equal(m.provincePopulation[2022],17523996);
+  const s=dataset('sources');
+  for(const k of ['budget2026','works2026','top','employment','muniMonthly','population','deflatorSplice'])assert(s[k]?.[1]?.startsWith('https://'),k);
+});
